@@ -52,6 +52,8 @@ textarea{min-height:80px;resize:vertical}
 .drop{border:2px dashed var(--teal-m);border-radius:12px;padding:22px;text-align:center;cursor:pointer;background:var(--teal-l);color:var(--teal-d);font-weight:700}
 .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .thumbs img{width:76px;height:76px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.thumbs .v{position:relative;display:inline-block}
+.thumbs .v::after{content:"▶";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:22px;text-shadow:0 1px 4px #000}
 .btn{border:0;background:var(--teal);color:#fff;font:inherit;font-weight:600;padding:12px 22px;border-radius:8px;cursor:pointer;width:100%;font-size:1.05rem}
 .btn:hover{filter:brightness(.96)}
 .btn:disabled{background:#b5d9cc;cursor:not-allowed}
@@ -170,8 +172,8 @@ input[type=date]{width:100%;font:inherit;border:1px solid transparent;border-rad
         </div>
         <div class="step">
           <h3><span class="num">٤</span> صورة الشاهد</h3>
-          <div class="drop" id="drop">اضغطي لرفع صورة الشاهد (يمكن أكثر من صورة)</div>
-          <input type="file" id="file" accept="image/*" multiple hidden>
+          <div class="drop" id="drop">اضغطي لرفع صور أو فيديو الشاهد (يمكن أكثر من ملف، والفيديو حتى ٥٠٠ م.ب)</div>
+          <input type="file" id="file" accept="image/*,video/*" multiple hidden>
           <div class="thumbs" id="thumbs"></div>
         </div>
         <button class="btn" id="save" disabled>حفظ الشاهد</button>
@@ -325,7 +327,7 @@ async function load(){
   renderGaps(); renderGal();
 }
 
-const st = {f:null, s:null, imgs:[]};
+const st = {f:null, s:null, imgs:[], vids:[]};
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fById = id => FOLDERS.find(f => f.id === id);
@@ -360,7 +362,7 @@ function cardHTML(it){
 }
 function current(){
   return {f:st.f, s:st.s, prog:$('prog').value.trim(), ach:$('ach').value.trim(), cnt:$('cnt').value, tgt:$('tgt').value,
-          bef:$('bef').value.trim(), aft:$('aft').value.trim(), who:$('who').value.trim(), dt:$('dt').value, imgs:st.imgs};
+          bef:$('bef').value.trim(), aft:$('aft').value.trim(), who:$('who').value.trim(), dt:$('dt').value, imgs:[...st.imgs, ...st.vids.map(v => v.thumb)]};
 }
 function refresh(){
   const c = current();
@@ -380,10 +382,47 @@ $('subs').onclick = e => {
 
 $('drop').onclick = () => $('file').click();
 $('file').onchange = async e => {
-  for (const file of e.target.files) st.imgs.push(await shrink(file));
-  $('thumbs').innerHTML = st.imgs.map(s => `<img src="${s}" alt="">`).join('');
+  for (const file of e.target.files) {
+    if (file.type.startsWith('video/')) {
+      if (file.size > VMAX) { alert(`الفيديو «${file.name}» أكبر من ٥٠٠ م.ب`); continue; }
+      st.vids.push({file, thumb: await vthumb(file)});
+    } else st.imgs.push(await shrink(file));
+  }
+  e.target.value = '';
+  $('thumbs').innerHTML = st.imgs.map(s => `<img src="${s}" alt="">`).join('') + st.vids.map(v => `<span class="v"><img src="${v.thumb}" alt=""></span>`).join('');
   refresh();
 };
+// videos: a frame becomes the card thumbnail; the file goes to Drive in 8 MB chunks through the script (vstart / vchunk)
+const VMAX = 500 * 1024 * 1024, CHUNK = 8 * 1024 * 1024;
+function vthumb(file){
+  const blank = () => { const c = document.createElement('canvas'); c.width = 640; c.height = 360; const g = c.getContext('2d');
+    g.fillStyle = '#123c30'; g.fillRect(0, 0, 640, 360); g.fillStyle = '#fff'; g.font = '48px sans-serif'; g.textAlign = 'center'; g.fillText('▶ فيديو', 320, 195); return c.toDataURL('image/jpeg', .7); };
+  return new Promise(res => {
+    const v = document.createElement('video'), done = d => { clearTimeout(t); URL.revokeObjectURL(v.src); res(d); };
+    const t = setTimeout(() => done(blank()), 5000);
+    v.muted = true; v.playsInline = true; v.preload = 'auto';
+    v.onloadeddata = () => { v.currentTime = Math.min(1, (v.duration || 2) / 2); };
+    v.onseeked = () => { try { const k = Math.min(1, 640 / v.videoWidth), c = document.createElement('canvas');
+      c.width = v.videoWidth * k; c.height = v.videoHeight * k; c.getContext('2d').drawImage(v, 0, 0, c.width, c.height); done(c.toDataURL('image/jpeg', .75)); } catch (e) { done(blank()); } };
+    v.onerror = () => done(blank());
+    v.src = URL.createObjectURL(file);
+  });
+}
+const b64 = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+async function sendVideo(v, n, it){
+  const file = v.file, type = file.type || 'video/mp4';
+  const name = `${it.prog} - فيديو ${n}.${(file.name.split('.').pop() || 'mp4').toLowerCase()}`;
+  const post = body => fetch(API, {method:'POST', body: JSON.stringify(body)}).then(r => r.json());
+  const s = await post({action:'vstart', fname: fById(it.f).name, s: it.s, name, type, size: file.size});
+  if (!s.ok) throw new Error(s.error);
+  for (let start = 0; start < file.size; start += CHUNK) {
+    $('save').textContent = `جاري رفع الفيديو ${AR(n)}: ${AR(Math.round(start / file.size * 100))}٪`;
+    const r = await post({action:'vchunk', url: s.url, start, total: file.size, type, data: await b64(file.slice(start, start + CHUNK))});
+    if (!r.ok) throw new Error(r.error);
+    if (r.done) return r.link;
+  }
+  throw new Error('لم يكتمل رفع الفيديو');
+}
 function shrink(file, max = 1400, q = .85){
   return new Promise(res => {
     const img = new Image();
@@ -407,8 +446,9 @@ $('save').onclick = async () => {
     if (thumb.length > 45000) thumb = await shrink(it.imgs[0], 240, .5);
     try {
       const r = await (await fetch(API, {method:'POST', body: JSON.stringify({action: SUPA ? 'upload' : 'add',
-        item:{...it, imgs:undefined, fname: fById(it.f).name}, imgs: it.imgs, thumb})})).json();
+        item:{...it, imgs:undefined, fname: fById(it.f).name}, imgs: st.imgs, thumb})})).json();
       if (!r.ok) throw new Error(r.error);
+      for (let k = 0; k < st.vids.length; k++) r.links.push(await sendVideo(st.vids[k], k + 1, it));
       if (SUPA) {
         const res = await supa('', {method:'POST', headers:{Prefer:'return=representation'}, body: JSON.stringify({
           folder: fById(it.f).name, sub: it.s, program: it.prog, achieved: it.ach, beneficiaries: it.cnt ? +it.cnt : null,
@@ -427,7 +467,7 @@ $('save').onclick = async () => {
   } else {
     items.unshift(it); persist();
   }
-  st.s = null; st.imgs = [];
+  st.s = null; st.imgs = []; st.vids = [];
   ['prog','ach','cnt','bef','aft'].forEach(id => $(id).value = '');
   $('thumbs').innerHTML = ''; renderSubs(); refresh(); renderGaps(); renderGal();
   $('toast').style.display = 'block'; setTimeout(() => $('toast').style.display = 'none', 1800);
