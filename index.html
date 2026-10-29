@@ -145,10 +145,12 @@ textarea{min-height:80px;resize:vertical}
             <div><label for="bef">قبل البرنامج <small>(اختياري)</small></label><input type="text" id="bef" placeholder="مثال: ٥٧٪"></div>
             <div><label for="aft">بعد البرنامج <small>(اختياري)</small></label><input type="text" id="aft" placeholder="مثال: ٦٨٪"></div>
           </div>
-          <div class="row">
-            <div><label for="who">المنفِّذة</label><input type="text" id="who" placeholder="اكتبي اسم المنفِّذة"></div>
-            <div><label>التاريخ</label><input type="text" id="dt" readonly></div>
-          </div>
+          <label for="who">المنفِّذة</label><input type="text" id="who" placeholder="اكتبي اسم المنفِّذة">
+          <label for="wk">تاريخ التنفيذ: الأسبوع <small>(حسب التقويم الدراسي)</small></label>
+          <select id="wk"></select>
+          <label for="wd">اليوم</label>
+          <select id="wd"></select>
+          <input type="hidden" id="dt">
         </div>
         <div class="step">
           <h3><span class="num">٤</span> صورة الشاهد</h3>
@@ -222,11 +224,34 @@ const FOLDERS = [
 ];
 
 const AR = s => String(s).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
-function hijriToday(){
-  const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'}).formatToParts(new Date());
-  const g = t => parts.find(p => p.type === t).value.replace(/\D/g,'');
+function hijri(t = Date.now()){
+  const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'}).formatToParts(new Date(t));
+  const g = k => parts.find(p => p.type === k).value.replace(/\D/g,'');
   // RLM before each slash keeps the day on the right in RTL
   return AR(g('day')) + '‏/' + AR(g('month')) + '‏/' + AR(g('year')) + 'هـ';
+}
+const hijriToday = () => hijri();
+// school weeks 1448هـ, Sunday → Thursday: 13 weeks from 23/8/2026, then 6 from 29/11/2026 (same calendar as the platform)
+const DAY = 864e5;
+const WEEKS = Array.from({length: 19}, (_, i) => i < 13 ? Date.UTC(2026, 7, 23 + 7 * i, 12) : Date.UTC(2026, 10, 29 + 7 * (i - 13), 12));
+const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
+const ORD = ['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر','الحادي عشر','الثاني عشر','الثالث عشر','الرابع عشر','الخامس عشر','السادس عشر','السابع عشر','الثامن عشر','التاسع عشر'];
+function fillDays(){
+  const s = WEEKS[+$('wk').value];
+  const keep = $('wd').value;
+  $('wd').innerHTML = DAYS.map((d, i) => `<option value="${i}">${d} ${hijri(s + i * DAY)}</option>`).join('');
+  $('wd').value = keep || '0';
+  setDate();
+}
+function setDate(){ $('dt').value = hijri(WEEKS[+$('wk').value] + +$('wd').value * DAY); refresh(); }
+function initDate(){
+  $('wk').innerHTML = WEEKS.map((s, i) => `<option value="${i}">الأسبوع ${ORD[i]}: ${hijri(s)} – ${hijri(s + 4 * DAY)}</option>`).join('');
+  // default = this week and today (Friday/Saturday → Thursday); outside the calendar → the nearest week
+  const now = Date.now();
+  const w = WEEKS.reduce((a, s, i) => s - 12 * 36e5 <= now ? i : a, 0);
+  const d = Math.min(4, Math.max(0, Math.floor((now - WEEKS[w] + 12 * 36e5) / DAY)));
+  $('wk').value = w; $('wd').value = '';
+  fillDays(); $('wd').value = d; setDate();
 }
 
 const SAMPLES = [
@@ -271,7 +296,8 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fById = id => FOLDERS.find(f => f.id === id);
 
-$('dt').value = hijriToday();
+$('wk').onchange = fillDays;
+$('wd').onchange = setDate;
 
 function renderFolders(){
   $('folders').innerHTML = FOLDERS.map(f =>
@@ -408,7 +434,7 @@ document.querySelector('.tabs').onclick = e => {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
 };
 
-renderFolders(); refresh(); renderGaps(); renderGal(); load();
+renderFolders(); initDate(); renderGaps(); renderGal(); load();
 </script>
 </body>
 </html>
