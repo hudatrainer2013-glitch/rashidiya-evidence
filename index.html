@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شواهد الراشدية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* same look as the TeamHub design of منصة المتوسطة ٢١ (localhost:8800): off-white bg, flat white cards, teal #2fbf98, deep green #123c30, lime tints, Rubik */
+:root{
+  --teal:#2fbf98; --teal-d:#123c30; --teal-l:#e3f0d2; --teal-m:#b9e6d4;
+  --gold:#c58a1c; --ink:#1d2b26; --muted:#66706b; --line:#e7e8e3; --soft:#f2f3ef;
+  --bg:#f4f4f1; --card:#ffffff; --red:#e5484d; --red-l:#fdecec; --green:#1f8f70; --green-l:#e0f5ec;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Rubik","IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+header{background:var(--card);color:var(--ink);border-bottom:1px solid var(--line);padding:16px 16px 12px}
+.hwrap{max-width:1100px;margin:auto;display:flex;align-items:center;gap:14px}
+.hwrap img{height:54px;background:var(--teal-l);border-radius:12px;padding:4px}
+.hwrap h1{margin:0;font-size:1.35rem;font-weight:600;color:var(--teal-d)}
+.hwrap p{margin:0;color:var(--muted);font-size:.93rem}
+.tabs{max-width:1100px;margin:14px auto 0;display:flex;gap:8px;overflow-x:auto}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-weight:500;padding:9px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;min-height:42px}
+.tabs button:hover{background:var(--soft)}
+.tabs button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+main{max-width:1100px;margin:auto;padding:20px 16px 60px}
+.view{display:none}.view.on{display:block}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.step{margin-bottom:22px}
+.step h3{margin:0 0 10px;font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.num{width:28px;height:28px;border-radius:50%;background:var(--teal);color:#fff;display:inline-grid;place-items:center;font-size:.9rem}
+.folders{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.fold{position:relative;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 10px;cursor:pointer;text-align:center;font:inherit;color:var(--ink);transition:.15s}
+.fold:hover{border-color:var(--teal-m)}
+.fold.on{border-color:var(--teal);background:var(--teal-l)}
+.fold svg{width:44px;height:44px;padding:9px;border-radius:10px;color:var(--teal-d);background:var(--teal-l)}
+.fold.on svg{background:var(--teal-d);color:#b9f0d9}
+.fold b{display:block;font-size:.95rem;margin-top:4px}
+.star{position:absolute;top:6px;left:8px;color:var(--gold);font-size:.8rem;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 14px;font:inherit;font-size:.92rem;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.hint{color:var(--muted);font-size:.88rem;margin:6px 0 0}
+label{display:block;font-weight:500;font-size:.93rem;margin:12px 0 5px}
+input[type=text],input[type=number],textarea,select{width:100%;font:inherit;border:1px solid transparent;border-radius:8px;padding:9px 12px;background:var(--soft);color:var(--ink)}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--teal);background:#fff;box-shadow:0 0 0 3px rgba(47,191,152,.18)}
+textarea{min-height:80px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.drop{border:2px dashed var(--teal-m);border-radius:12px;padding:22px;text-align:center;cursor:pointer;background:var(--teal-l);color:var(--teal-d);font-weight:700}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.thumbs img{width:76px;height:76px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.btn{border:0;background:var(--teal);color:#fff;font:inherit;font-weight:600;padding:12px 22px;border-radius:8px;cursor:pointer;width:100%;font-size:1.05rem}
+.btn:hover{filter:brightness(.96)}
+.btn:disabled{background:#b5d9cc;cursor:not-allowed}
+.sticky{position:sticky;top:14px}
+.pv-title{font-weight:600;color:var(--muted);font-size:.9rem;margin:0 0 8px}
+/* evidence card (presentation style) */
+.ecard{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.ecard .top{background:var(--teal-d);color:#fff;padding:12px 16px}
+.ecard .crumb{font-size:.8rem;opacity:.9}
+.ecard h4{margin:2px 0 0;font-size:1.15rem}
+.ecard .ph{aspect-ratio:16/9;background:var(--teal-l);display:grid;place-items:center;color:var(--teal);font-weight:700}
+.ecard .ph img{width:100%;height:100%;object-fit:cover}
+.ecard .body{padding:12px 16px}
+.ecard .ach{margin:0 0 8px}
+.kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.kpi{background:var(--teal-l);border-radius:10px;padding:4px 10px;font-size:.85rem;color:var(--teal-d);font-weight:700}
+.ecard .foot{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding:8px 16px}
+.demo{background:var(--gold);color:#fff;border-radius:6px;padding:0 6px;font-size:.75rem;margin-inline-start:6px}
+/* gaps */
+.gsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.stat b{font-size:1.8rem;color:var(--teal-d);display:block;line-height:1.2}
+.stat span{color:var(--muted);font-size:.9rem}
+.gfold{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.gfold header{all:unset;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.gfold header svg{width:26px;height:26px;color:var(--teal)}
+.gfold header b{font-size:1.05rem;flex:1}
+.bar{height:8px;background:var(--teal-l);border-radius:99px;overflow:hidden;margin-bottom:10px}
+.bar i{display:block;height:100%;background:var(--teal)}
+.subs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.sub{display:flex;justify-content:space-between;align-items:center;border-radius:10px;padding:7px 12px;font-size:.92rem}
+.sub.ok{background:var(--green-l);color:var(--green)}
+.sub.no{background:var(--red-l);color:var(--red)}
+.sub em{font-style:normal;font-weight:600;white-space:nowrap;margin-inline-start:8px}
+/* gallery */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.empty{text-align:center;color:var(--muted);padding:40px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 22px;border-radius:12px;font-weight:700;display:none}
+.note{background:#fbf1de;border:0;border-radius:10px;padding:8px 14px;font-size:.88rem;color:#7a5200;margin-bottom:16px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="logo.png" alt="شعار وزارة التعليم">
+    <div>
+      <h1>منصة شواهد المنجزات</h1>
+      <p>ابتدائية ومتوسطة الراشدية — ١٤٤٨هـ — أ. هدى آل مساعد</p>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="on" data-v="add">إضافة شاهد</button>
+    <button data-v="gaps">لوحة الفجوات</button>
+    <button data-v="gal">معرض الشواهد</button>
+  </nav>
+</header>
+
+<main>
+  <div class="note">نموذج معاينة: الشواهد تُحفظ في هذا المتصفح فقط. البطاقتان المعلَّمتان «مثال» مأخوذتان من عرض الراشدية للتوضيح.</div>
+
+  <!-- add -->
+  <section class="view on" id="v-add">
+    <div class="grid2">
+      <div class="box">
+        <div class="step">
+          <h3><span class="num">١</span> اختاري المجلد الأساسي</h3>
+          <div class="folders" id="folders"></div>
+          <p class="hint">★ = أولوية لرفع مستوى المدرسة (فرص التحسين في التقويم المدرسي)</p>
+        </div>
+        <div class="step">
+          <h3><span class="num">٢</span> اختاري المجلد الفرعي</h3>
+          <div class="chips" id="subs"><span class="hint">اختاري المجلد الأساسي أولًا</span></div>
+        </div>
+        <div class="step">
+          <h3><span class="num">٣</span> البرنامج المنجز وما حققه</h3>
+          <label for="prog">اسم البرنامج</label>
+          <input type="text" id="prog" list="progList" placeholder="اختاري من البرامج المقترحة أو اكتبي اسمًا جديدًا">
+          <datalist id="progList"></datalist>
+          <label for="ach">ماذا حقق البرنامج؟</label>
+          <textarea id="ach" placeholder="مثال: نفّذت ٣ حصص علاجية لطالبات ثالث متوسط في استراتيجيات حل أسئلة نافس"></textarea>
+          <div class="row">
+            <div><label for="cnt">عدد المستفيدات</label><input type="number" id="cnt" min="0" placeholder="مثال: ٣٠"></div>
+            <div><label for="tgt">الفئة المستهدفة</label>
+              <select id="tgt"><option>الطالبات</option><option>المعلمات</option><option>الأمهات والمجتمع</option><option>جميع منسوبات المدرسة</option></select></div>
+          </div>
+          <div class="row">
+            <div><label for="bef">قبل البرنامج <small>(اختياري)</small></label><input type="text" id="bef" placeholder="مثال: ٥٧٪"></div>
+            <div><label for="aft">بعد البرنامج <small>(اختياري)</small></label><input type="text" id="aft" placeholder="مثال: ٦٨٪"></div>
+          </div>
+          <div class="row">
+            <div><label for="who">المنفِّذة</label><input type="text" id="who" value="أ. هدى آل مساعد"></div>
+            <div><label>التاريخ</label><input type="text" id="dt" readonly></div>
+          </div>
+        </div>
+        <div class="step">
+          <h3><span class="num">٤</span> صورة الشاهد</h3>
+          <div class="drop" id="drop">اضغطي لرفع صورة الشاهد (يمكن أكثر من صورة)</div>
+          <input type="file" id="file" accept="image/*" multiple hidden>
+          <div class="thumbs" id="thumbs"></div>
+        </div>
+        <button class="btn" id="save" disabled>حفظ الشاهد</button>
+      </div>
+
+      <div class="sticky">
+        <p class="pv-title">معاينة البطاقة كما ستظهر في العرض</p>
+        <div id="preview"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gaps -->
+  <section class="view" id="v-gaps">
+    <div class="gsum" id="gsum"></div>
+    <div id="gfolds"></div>
+  </section>
+
+  <!-- gallery -->
+  <section class="view" id="v-gal">
+    <div class="filters" id="filters"></div>
+    <div class="gal" id="gal"></div>
+  </section>
+</main>
+<div class="toast" id="toast">تم حفظ الشاهد ✓</div>
+
+<script>
+const IC = {
+  admin:'<path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/>',
+  teach:'<path d="M3 5h18v11H3zM8 21h8M12 16v5"/><path d="M7 9h6M7 12h4"/>',
+  out:'<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
+  env:'<path d="M12 21c-4.5-3-7-6.5-7-10a7 7 0 0114 0c0 3.5-2.5 7-7 10z"/><path d="M12 8v6M9 11h6"/>',
+  nat:'<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+  star:'<circle cx="12" cy="8" r="5"/><path d="M8.5 12L7 21l5-3 5 3-1.5-9"/>'
+};
+const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
+
+const FOLDERS = [
+  {id:'admin', name:'الإدارة المدرسية', icon:'admin', subs:[
+    {n:'التخطيط والمتابعة', p:['الخطة التشغيلية ١٤٤٨هـ','محاضر إغلاق البرامج']},
+    {n:'التطوير المهني', p:['نماء (مجتمعات التعلم)','كفاءات']},
+    {n:'الشراكة الأسرية والمجتمعية', p:['تواصل (مجالس الأمهات)','شركاء النجاح','مبادرة ارتقاء','نافذة للمجتمع']}]},
+  {id:'teach', name:'التعليم والتعلم', icon:'teach', subs:[
+    {n:'تخطيط التعلم', p:['التدريس الفعّال']},
+    {n:'بناء خبرات التعلم', p:['التدريس الفعّال','المنهج في حياتنا']},
+    {n:'تقويم التعلم', p:['أدوات تقويم تكويني متنوعة'], pr:1},
+    {n:'التمكين الرقمي', p:['التمكين الرقمي']}]},
+  {id:'out', name:'نواتج التعلم', icon:'out', pr:1, subs:[
+    {n:'التحصيل الدراسي', p:['التميّز في نافس','نقاط التميّز العلمي','حصص إثرائية وعلاجية'], pr:1},
+    {n:'التطور الشخصي والصحي والاجتماعي', p:['غذائي صحتي','أبطال اللياقة','ذاتي الإيجابية','وعيي حمايتي']},
+    {n:'الحضور والانضباط', p:['حضوري تميّزي','كلنا قادرون']}]},
+  {id:'env', name:'البيئة المدرسية', icon:'env', pr:1, subs:[
+    {n:'المبنى المدرسي', p:['مدرستي الخضراء'], pr:1},
+    {n:'الأمن والسلامة', p:['درع المدرسة (بيئة آمنة)','ركن السلامة']},
+    {n:'المناخ المدرسي والقيم', p:['أخلاقي ترتقي بي','صوت الطالبة','بصمة ارتقاء']}]},
+  {id:'nat', name:'المناسبات والهوية الوطنية', icon:'nat', subs:[
+    {n:'أيامنا الوطنية', p:['يوم التأسيس','اليوم الوطني','سفراء الرؤية']},
+    {n:'الأيام العالمية', p:['اليوم العالمي للمعلم','اليوم العالمي للمدير','اليوم العالمي للفضاء','اليوم العالمي للغة العربية','اليوم العالمي للسكري']},
+    {n:'مواسم الطاعات', p:['مواسم الطاعات']},
+    {n:'التوعية الصحية', p:['أكتوبر الوردي','الكشف المبكر']}]},
+  {id:'star', name:'إنجازات الطالبات والمعلمات', icon:'star', subs:[
+    {n:'سفيرات المدرسة', p:['تبادل الخبرات والمهارات الطلابية']},
+    {n:'مسابقات وجوائز', p:['صنّاع المستقبل']},
+    {n:'شهادات شكر وتقدير', p:[]},
+    {n:'مبادرات المعلمات', p:[]}]}
+];
+
+const AR = s => String(s).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+function hijriToday(){
+  const parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric',year:'numeric'}).formatToParts(new Date());
+  const g = t => parts.find(p => p.type === t).value.replace(/\D/g,'');
+  // RLM before each slash keeps the day on the right in RTL
+  return AR(g('day')) + '‏/' + AR(g('month')) + '‏/' + AR(g('year')) + 'هـ';
+}
+
+const SAMPLES = [
+  {f:'nat', s:'أيامنا الوطنية', prog:'يوم التأسيس', ach:'معرض للتراث السعودي بأدوات وأزياء ومشغولات تراثية من بيوت الطالبات، شاركت فيه الطالبات والإداريات إعدادًا وعرضًا.', cnt:'285', tgt:'الطالبات', who:'أ. فتحية الرشيد', dt:'', imgs:[], demo:1},
+  {f:'star', s:'سفيرات المدرسة', prog:'تبادل الخبرات والمهارات الطلابية', ach:'الطالبة عروب وائل العنزي قدّمت ورشة لطالبات ابتدائية خديجة بنت خويلد في توظيف البرامج الحكومية والذكاء الاصطناعي في التعلّم، ونالت شهادة شكر.', cnt:'', tgt:'الطالبات', who:'عروب وائل العنزي', dt:'', imgs:[], demo:1}
+];
+// Apps Script web app on هدى's account; empty = local demo mode
+const API = 'https://script.google.com/macros/s/AKfycbyWdWYwYhVpipy0uAl_FZMxUpcZZ2MFHvYM7TJMitINz8zY9NxeiOwQAN98V8i9rOkPPw/exec';
+// Supabase project on هدى's account: evidence rows live here, photos stay in Drive (via API). Empty = rows in the Google Sheet.
+const SUPA_URL = 'https://mhdaitapwnrwbnsjzgtb.supabase.co';
+const SUPA_KEY = 'sb_publishable_bhlW8RvmgRDYu7a9SryzrA_V8MwbVtt';
+const SUPA = SUPA_URL && SUPA_KEY;
+const supa = (q, opt = {}) => fetch(`${SUPA_URL}/rest/v1/evidence${q}`, {...opt,
+  headers: {apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', ...(opt.headers || {})}});
+const fromRow = r => ({id: r.id, f: (FOLDERS.find(f => f.name === r.folder) || {}).id, s: r.sub, prog: r.program, ach: r.achieved,
+  cnt: r.beneficiaries ?? '', tgt: r.target, bef: r.before_value, aft: r.after_value, who: r.executor, dt: r.hijri_date,
+  links: r.photo_links || [], imgs: r.thumb ? [r.thumb] : []});
+let items = [];
+if (!API) {
+  try { items = JSON.parse(localStorage.getItem('rsh-ev') || 'null'); } catch(e) {}
+  if (!Array.isArray(items)) items = SAMPLES;
+}
+const persist = () => { if (!API) try { localStorage.setItem('rsh-ev', JSON.stringify(items)); } catch(e) {} };
+async function load(){
+  if (!API) return;
+  $('gal').innerHTML = '<div class="empty">جاري تحميل الشواهد…</div>';
+  try {
+    if (SUPA) {
+      const res = await supa('?select=*&order=created_at.desc');
+      if (!res.ok) throw new Error(await res.text());
+      items = (await res.json()).map(fromRow);
+    } else {
+      const r = await (await fetch(API)).json();
+      items = r.items.map(i => ({...i, f:(FOLDERS.find(f => f.name === i.f) || {}).id, imgs: i.thumb ? [i.thumb] : []}));
+    }
+  } catch(e) { $('gal').innerHTML = '<div class="empty">تعذّر تحميل الشواهد، تأكدي من الاتصال</div>'; return; }
+  renderGaps(); renderGal();
+}
+
+const st = {f:null, s:null, imgs:[]};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fById = id => FOLDERS.find(f => f.id === id);
+
+$('dt').value = hijriToday();
+
+function renderFolders(){
+  $('folders').innerHTML = FOLDERS.map(f =>
+    `<button class="fold ${st.f===f.id?'on':''}" data-f="${f.id}">${f.pr?'<span class="star">★</span>':''}${svg(f.icon)}<b>${f.name}</b></button>`).join('');
+}
+function renderSubs(){
+  const f = fById(st.f);
+  if (!f) return;
+  $('subs').innerHTML = f.subs.map(s =>
+    `<button class="chip ${st.s===s.n?'on':''}" data-s="${esc(s.n)}">${s.pr?'★ ':''}${s.n}</button>`).join('');
+  const sub = f.subs.find(s => s.n === st.s);
+  $('progList').innerHTML = (sub ? sub.p : f.subs.flatMap(s => s.p)).map(p => `<option value="${esc(p)}">`).join('');
+}
+
+function cardHTML(it){
+  const f = fById(it.f) || {name:''};
+  const k = [];
+  if (it.cnt) k.push(`${AR(it.cnt)} مستفيدة — ${esc(it.tgt)}`);
+  if (it.bef || it.aft) k.push(`قبل ${esc(AR(it.bef||'—'))} ← بعد ${esc(AR(it.aft||'—'))}`);
+  return `<article class="ecard">
+    <div class="top"><div class="crumb">${f.name}${it.s?' › '+esc(it.s):''}${it.demo?'<span class="demo">مثال</span>':''}</div>
+      <h4>${esc(it.prog) || 'اسم البرنامج'}</h4></div>
+    <div class="ph">${it.imgs && it.imgs[0] ? `<img src="${it.imgs[0]}" alt="">` : 'صورة الشاهد'}</div>
+    <div class="body"><p class="ach">${esc(it.ach) || 'ماذا حقق البرنامج…'}</p>
+      ${k.length?`<div class="kpis">${k.map(x=>`<span class="kpi">${x}</span>`).join('')}</div>`:''}</div>
+    <div class="foot"><span>${esc(it.who)}</span>${it.links && it.links[0] ? `<a href="${esc(it.links[0])}" target="_blank" rel="noopener" style="color:var(--teal)">الصورة الأصلية</a>` : ''}<span>${it.dt || ''}</span></div>
+  </article>`;
+}
+function current(){
+  return {f:st.f, s:st.s, prog:$('prog').value.trim(), ach:$('ach').value.trim(), cnt:$('cnt').value, tgt:$('tgt').value,
+          bef:$('bef').value.trim(), aft:$('aft').value.trim(), who:$('who').value.trim(), dt:$('dt').value, imgs:st.imgs};
+}
+function refresh(){
+  const c = current();
+  $('preview').innerHTML = cardHTML(c);
+  $('save').disabled = !(c.f && c.s && c.prog && c.ach && c.imgs.length);
+}
+
+$('folders').onclick = e => {
+  const b = e.target.closest('[data-f]'); if (!b) return;
+  st.f = b.dataset.f; st.s = null; renderFolders(); renderSubs(); refresh();
+};
+$('subs').onclick = e => {
+  const b = e.target.closest('[data-s]'); if (!b) return;
+  st.s = b.dataset.s; renderSubs(); refresh();
+};
+['prog','ach','cnt','tgt','bef','aft','who'].forEach(id => $(id).addEventListener('input', refresh));
+
+$('drop').onclick = () => $('file').click();
+$('file').onchange = async e => {
+  for (const file of e.target.files) st.imgs.push(await shrink(file));
+  $('thumbs').innerHTML = st.imgs.map(s => `<img src="${s}" alt="">`).join('');
+  refresh();
+};
+function shrink(file, max = 1400, q = .85){
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = img.width * k; c.height = img.height * k;
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL('image/jpeg', q));
+    };
+    img.src = typeof file === 'string' ? file : URL.createObjectURL(file);
+  });
+}
+
+$('save').onclick = async () => {
+  const it = current();
+  if (API) {
+    $('save').disabled = true; $('save').textContent = 'جاري الحفظ…';
+    // small thumbnail kept in the sheet (cell limit 50k chars); full photos stay private in Drive
+    let thumb = await shrink(it.imgs[0], 360, .6);
+    if (thumb.length > 45000) thumb = await shrink(it.imgs[0], 240, .5);
+    try {
+      const r = await (await fetch(API, {method:'POST', body: JSON.stringify({action: SUPA ? 'upload' : 'add',
+        item:{...it, imgs:undefined, fname: fById(it.f).name}, imgs: it.imgs, thumb})})).json();
+      if (!r.ok) throw new Error(r.error);
+      if (SUPA) {
+        const res = await supa('', {method:'POST', headers:{Prefer:'return=representation'}, body: JSON.stringify({
+          folder: fById(it.f).name, sub: it.s, program: it.prog, achieved: it.ach, beneficiaries: it.cnt ? +it.cnt : null,
+          target: it.tgt, before_value: it.bef, after_value: it.aft, executor: it.who, hijri_date: it.dt,
+          photo_links: r.links, thumb})});
+        if (!res.ok) throw new Error(await res.text());
+        items.unshift(fromRow((await res.json())[0]));
+      } else {
+        items.unshift({...it, id:r.id, links:r.links, imgs:[thumb]});
+      }
+    } catch(e) {
+      alert('ما تم الحفظ، حاولي مرة ثانية.\n' + e.message);
+      $('save').textContent = 'حفظ الشاهد'; refresh(); return;
+    }
+    $('save').textContent = 'حفظ الشاهد';
+  } else {
+    items.unshift(it); persist();
+  }
+  st.s = null; st.imgs = [];
+  ['prog','ach','cnt','bef','aft'].forEach(id => $(id).value = '');
+  $('thumbs').innerHTML = ''; renderSubs(); refresh(); renderGaps(); renderGal();
+  $('toast').style.display = 'block'; setTimeout(() => $('toast').style.display = 'none', 1800);
+};
+
+function renderGaps(){
+  const allSubs = FOLDERS.flatMap(f => f.subs.map(s => ({f, s})));
+  const covered = allSubs.filter(x => items.some(i => i.f === x.f.id && i.s === x.s.n)).length;
+  const empty = allSubs.length - covered;
+  $('gsum').innerHTML = `
+    <div class="stat"><b>${AR(items.length)}</b><span>شاهدًا محفوظًا</span></div>
+    <div class="stat"><b>${AR(covered)} / ${AR(allSubs.length)}</b><span>مجلد فرعي فيه شواهد</span></div>
+    <div class="stat"><b style="color:var(--red)">${AR(empty)}</b><span>مجلد فرعي بدون شواهد</span></div>`;
+  $('gfolds').innerHTML = FOLDERS.map(f => {
+    const ok = f.subs.filter(s => items.some(i => i.f === f.id && i.s === s.n)).length;
+    return `<div class="gfold"><header>${svg(f.icon)}<b>${f.name}${f.pr?' <span style="color:var(--gold)">★</span>':''}</b>
+      <span>${AR(ok)} من ${AR(f.subs.length)}</span></header>
+      <div class="bar"><i style="width:${ok / f.subs.length * 100}%"></i></div>
+      <div class="subs">${f.subs.map(s => { const n = items.filter(i => i.f === f.id && i.s === s.n).length;
+        return `<div class="sub ${n?'ok':'no'}"><span>${s.n}</span><em>${n ? AR(n) : 'لا يوجد'}</em></div>`; }).join('')}</div></div>`;
+  }).join('');
+}
+
+let gf = 'all';
+function renderGal(){
+  $('filters').innerHTML = [{id:'all', name:'الكل'}, ...FOLDERS].map(f =>
+    `<button class="chip ${gf===f.id?'on':''}" data-g="${f.id}">${f.name}</button>`).join('');
+  const list = items.filter(i => gf === 'all' || i.f === gf);
+  $('gal').innerHTML = list.length ? list.map(cardHTML).join('') : '<div class="empty">لا توجد شواهد في هذا المجلد بعد</div>';
+}
+$('filters').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { gf = b.dataset.g; renderGal(); } };
+
+document.querySelector('.tabs').onclick = e => {
+  const b = e.target.closest('[data-v]'); if (!b) return;
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+};
+
+if (API) document.querySelector('.note').textContent = 'الشواهد تُحفظ في مجلد أ. هدى آل مساعد على Google Drive.';
+renderFolders(); refresh(); renderGaps(); renderGal(); load();
+</script>
+</body>
+</html>
