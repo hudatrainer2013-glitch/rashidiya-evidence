@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>شواهد الراشدية</title>
+<title>شواهد منجزات المدرسة</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -91,7 +91,9 @@ textarea{min-height:80px;resize:vertical}
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
 .empty{text-align:center;color:var(--muted);padding:40px}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 22px;border-radius:12px;font-weight:700;display:none}
-.note{background:#fbf1de;border:0;border-radius:10px;padding:8px 14px;font-size:.88rem;color:#7a5200;margin-bottom:16px}
+.hwrap p.school{color:var(--teal-d);font-weight:500}
+.credit{text-align:center;color:var(--muted);font-size:.9rem;padding:18px 16px 28px;border-top:1px solid var(--line);background:var(--card)}
+.credit b{color:var(--teal-d);font-weight:600}
 </style>
 </head>
 <body>
@@ -99,8 +101,10 @@ textarea{min-height:80px;resize:vertical}
   <div class="hwrap">
     <img src="logo.png" alt="شعار وزارة التعليم">
     <div>
-      <h1>منصة شواهد المنجزات</h1>
-      <p>ابتدائية ومتوسطة الراشدية — ١٤٤٨هـ — أ. هدى آل مساعد</p>
+      <h1>شواهد منجزات المدرسة</h1>
+      <p class="school">ابتدائية ومتوسطة الراشدية — ١٤٤٨هـ</p>
+      <p>مديرة المدرسة: أ. مها الهذيلي</p>
+      <p>إعداد وتصميم: هدى آل مساعد</p>
     </div>
   </div>
   <nav class="tabs">
@@ -111,7 +115,6 @@ textarea{min-height:80px;resize:vertical}
 </header>
 
 <main>
-  <div class="note">نموذج معاينة: الشواهد تُحفظ في هذا المتصفح فقط. البطاقتان المعلَّمتان «مثال» مأخوذتان من عرض الراشدية للتوضيح.</div>
 
   <!-- add -->
   <section class="view on" id="v-add">
@@ -405,7 +408,6 @@ document.querySelector('.tabs').onclick = e => {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
 };
 
-if (API) document.querySelector('.note').textContent = 'الشواهد تُحفظ في مجلد أ. هدى آل مساعد على Google Drive.';
 renderFolders(); refresh(); renderGaps(); renderGal(); load();
 </script>
 </body>
