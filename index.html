@@ -93,6 +93,20 @@ textarea{min-height:80px;resize:vertical}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 22px;border-radius:12px;font-weight:700;display:none}
 .hd{color:var(--teal-d);font-weight:500;font-size:.9rem;margin-top:4px;min-height:1.4em}
 input[type=date]{width:100%;font:inherit;border:1px solid transparent;border-radius:8px;padding:9px 12px;background:var(--soft);color:var(--ink)}
+.hp{position:relative}
+.hp-btn{width:100%;text-align:start;font:inherit;font-weight:500;border:1px solid transparent;border-radius:8px;padding:9px 12px;background:var(--soft);color:var(--teal-d);cursor:pointer}
+.hp-btn::after{content:"▾";float:left;color:var(--muted)}
+.hp-pop{position:absolute;z-index:20;top:100%;inset-inline:0;margin-top:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:0 8px 24px rgba(18,60,48,.12);min-width:260px}
+.hp-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hp-h button{border:0;background:var(--teal-l);color:var(--teal-d);width:32px;height:32px;border-radius:8px;font-size:1.2rem;cursor:pointer}
+.hp-g{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.hp-w{font-size:.7rem;color:var(--muted)}
+.hp-g button{border:0;background:transparent;font:inherit;padding:6px 0;border-radius:8px;cursor:pointer;color:var(--ink)}
+.hp-g button:hover{background:var(--teal-l)}
+.hp-g button.we{color:var(--muted)}
+.hp-g button.today{outline:1px solid var(--teal)}
+.hp-g button.on{background:var(--teal);color:#fff}
+.hp-g button:disabled{opacity:.3;cursor:not-allowed}
 .hwrap p.school{color:var(--teal-d);font-weight:500}
 .credit{text-align:center;color:var(--muted);font-size:.9rem;padding:18px 16px 28px;border-top:1px solid var(--line);background:var(--card)}
 .credit b{color:var(--teal-d);font-weight:600}
@@ -149,8 +163,8 @@ input[type=date]{width:100%;font:inherit;border:1px solid transparent;border-rad
           </div>
           <label for="who">المنفِّذة</label><input type="text" id="who" placeholder="اكتبي اسم المنفِّذة">
           <div class="row">
-            <div><label for="d1">بداية البرنامج</label><input type="date" id="d1"><div class="hd" id="h1"></div></div>
-            <div><label for="d2">نهاية البرنامج</label><input type="date" id="d2"><div class="hd" id="h2"></div></div>
+            <div class="hp"><label>بداية البرنامج</label><button type="button" class="hp-btn" data-hp="0" id="h1"></button><div class="hp-pop" id="p0" hidden></div></div>
+            <div class="hp"><label>نهاية البرنامج</label><button type="button" class="hp-btn" data-hp="1" id="h2"></button><div class="hp-pop" id="p1" hidden></div></div>
           </div>
           <input type="hidden" id="dt">
         </div>
@@ -233,18 +247,46 @@ function hijri(t = Date.now()){
   return AR(g('day')) + '‏/' + AR(g('month')) + '‏/' + AR(g('year')) + 'هـ';
 }
 const hijriToday = () => hijri();
-// program period: two calendar pickers; stored as «من … إلى …» in Hijri (day rightmost)
-const ymd = t => { const d = new Date(t); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-'); };
-const at = v => new Date(v + 'T12:00:00').getTime();
+// program period: two Hijri (Umm al-Qura) calendar pickers; stored as «من … إلى …» (day rightmost)
+const HM = ['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
+const HFMT = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {day:'numeric', month:'numeric', year:'numeric', timeZone:'UTC'});
+const HDAYS = [];   // every day from 1447 to 1449 with its Hijri parts
+for (let t = Date.UTC(2025, 5, 1, 12); t < Date.UTC(2028, 3, 1); t += 864e5) {
+  const P = HFMT.formatToParts(new Date(t)), g = k => +P.find(q => q.type === k).value.replace(/\D/g, '');
+  HDAYS.push({t, y: g('year'), m: g('month'), d: g('day'), wd: new Date(t).getUTCDay()});
+}
+const hTxt = x => AR(x.d) + '‏/' + AR(x.m) + '‏/' + AR(x.y) + 'هـ';
+const todayIdx = (() => { const n = new Date(), u = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate(), 12); return Math.max(0, HDAYS.findIndex(x => x.t === u)); })();
+const hp = {sel: [todayIdx, todayIdx], view: [null, null]};
+function hpRender(k){
+  const cur = HDAYS[hp.sel[k]], v = hp.view[k] || {y: cur.y, m: cur.m};
+  hp.view[k] = v;
+  const days = HDAYS.map((x, i) => ({...x, i})).filter(x => x.y === v.y && x.m === v.m);
+  const min = k === 1 ? hp.sel[0] : -1;
+  $('p' + k).innerHTML = `<div class="hp-h"><button type="button" data-nav="-1" aria-label="الشهر السابق">›</button><b>${HM[v.m - 1]} ${AR(v.y)}هـ</b><button type="button" data-nav="1" aria-label="الشهر التالي">‹</button></div>
+    <div class="hp-g">${['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'].map(d => `<span class="hp-w">${d}</span>`).join('')}
+    ${'<span></span>'.repeat(days[0].wd)}${days.map(x => `<button type="button" data-i="${x.i}" class="${x.i === hp.sel[k] ? 'on' : ''}${x.i === todayIdx ? ' today' : ''}${x.wd >= 5 ? ' we' : ''}"${x.i < min ? ' disabled' : ''}>${AR(x.d)}</button>`).join('')}</div>`;
+}
 function setDate(){
-  if ($('d2').value < $('d1').value) $('d2').value = $('d1').value;
-  $('d2').min = $('d1').value;
-  const h1 = hijri(at($('d1').value)), h2 = hijri(at($('d2').value));
+  if (hp.sel[1] < hp.sel[0]) hp.sel[1] = hp.sel[0];
+  const h1 = hTxt(HDAYS[hp.sel[0]]), h2 = hTxt(HDAYS[hp.sel[1]]);
   $('h1').textContent = h1; $('h2').textContent = h2;
   $('dt').value = h1 === h2 ? h1 : `من ${h1} إلى ${h2}`;
   refresh();
 }
-function initDate(){ $('d1').value = $('d2').value = ymd(Date.now()); setDate(); }
+function initDate(){ setDate(); }
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.hp-btn');
+  if (btn) { const k = +btn.dataset.hp, pop = $('p' + k), open = pop.hidden;
+    document.querySelectorAll('.hp-pop').forEach(p => p.hidden = true);
+    if (open) { hp.view[k] = null; hpRender(k); pop.hidden = false; } return; }
+  const pop = e.target.closest('.hp-pop');
+  if (!pop) { document.querySelectorAll('.hp-pop').forEach(p => p.hidden = true); return; }
+  const k = +pop.id.slice(1), nav = e.target.closest('[data-nav]'), day = e.target.closest('[data-i]');
+  if (nav) { const v = hp.view[k], n = v.y * 12 + v.m - 1 + +nav.dataset.nav, y = Math.floor(n / 12), m = n % 12 + 1;
+    if (HDAYS.some(x => x.y === y && x.m === m)) { hp.view[k] = {y, m}; hpRender(k); } }
+  if (day) { hp.sel[k] = +day.dataset.i; pop.hidden = true; setDate(); }
+});
 
 const SAMPLES = [
   {f:'nat', s:'أيامنا الوطنية', prog:'يوم التأسيس', ach:'معرض للتراث السعودي بأدوات وأزياء ومشغولات تراثية من بيوت الطالبات، شاركت فيه الطالبات والإداريات إعدادًا وعرضًا.', cnt:'285', tgt:'الطالبات', who:'أ. فتحية الرشيد', dt:'', imgs:[], demo:1},
@@ -288,7 +330,6 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fById = id => FOLDERS.find(f => f.id === id);
 
-$('d1').onchange = $('d2').onchange = setDate;
 
 function renderFolders(){
   $('folders').innerHTML = FOLDERS.map(f =>
