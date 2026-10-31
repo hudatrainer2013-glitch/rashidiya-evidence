@@ -26,7 +26,7 @@ header{background:var(--card);color:var(--ink);border-bottom:1px solid var(--lin
 .tabs button.on{background:var(--teal);border-color:var(--teal);color:#fff}
 main{max-width:1100px;margin:auto;padding:20px 16px 60px}
 .view{display:none}.view.on{display:block}
-/* login (2026-10-30): phone only, same Supabase account as the teacher record (same site, so one sign-in covers both) */
+/* login (2026-10-31): secret code, own Supabase account (was the phone, shared with the teacher record) */
 /* «إضافة شاهد» is open; the other two tabs open this login over the page */
 #login{display:none;position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;padding:16px;background:rgba(18,60,48,.45)}
 body.asklogin #login{display:flex}
@@ -83,6 +83,34 @@ textarea{min-height:80px;resize:vertical}
 .ecard h4{margin:2px 0 0;font-size:1.15rem}
 .ecard .ph{aspect-ratio:16/9;background:var(--teal-l);display:grid;place-items:center;color:var(--teal);font-weight:700}
 .ecard .ph img{width:100%;height:100%;object-fit:cover}
+.ecard .ph.open{cursor:pointer;position:relative}
+.ecard .ph.vid{aspect-ratio:4/5}
+/* file dots (her sample 2026-10-31): the current file is a brown pill, the rest grey dots */
+.dots{display:flex;gap:7px;align-items:center;justify-content:center;padding:8px 0 2px}
+.dots i{width:10px;height:10px;border-radius:50%;background:#a9b8b8;cursor:pointer;transition:width .2s}
+.dots i.on{width:30px;border-radius:6px;background:#7a4a0c}
+.ecard .ph.vid::after{content:"▶";position:absolute;width:58px;height:58px;border-radius:50%;background:rgba(18,60,48,.75);color:#fff;font-size:24px;display:grid;place-items:center}
+/* viewer (2026-10-31): plays the Drive files (videos and photos) inside the page */
+#viewer{display:none;position:fixed;inset:0;z-index:60;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.75)}
+#viewer.on{display:flex}
+#viewer .box{width:min(900px,100%);background:var(--card);border-radius:16px;overflow:hidden}
+#viewer .bar{display:flex;gap:8px;align-items:center;padding:10px 12px;flex-wrap:wrap}
+#viewer .bar h4{margin:0;flex:1;color:var(--teal-d);font-size:1rem}
+#viewer iframe{display:block;width:100%;height:75vh;border:0;background:#000}
+#viewer .dots{padding:10px 0}
+#viewer .bar button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font:inherit;cursor:pointer}
+#viewer .bar button.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+/* edit / delete (2026-10-31): gallery cards only, signed in */
+.ecard .acts{display:flex;gap:8px;padding:8px 16px;border-top:1px solid var(--line)}
+.ecard .acts button{flex:1;height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit;cursor:pointer;color:var(--teal-d)}
+.ecard .acts button.del{color:var(--red)}
+#editor{display:none;position:fixed;inset:0;z-index:60;align-items:center;justify-content:center;padding:16px;background:rgba(18,60,48,.45)}
+#editor.on{display:flex}
+#editor form{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--card);border-radius:18px;padding:20px}
+#editor h3{margin:0 0 10px;color:var(--teal-d)}
+#editor .btns{display:flex;gap:10px;margin-top:16px}
+#editor .btns button{flex:1;height:46px;border-radius:12px;font:inherit;font-weight:600;cursor:pointer;border:1px solid var(--line);background:#fff}
+#editor .btns button[type=submit]{background:var(--teal);color:#fff;border:0}
 .ecard .body{padding:12px 16px}
 .ecard .ach{margin:0 0 8px}
 .kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
@@ -133,14 +161,44 @@ input[type=date]{width:100%;font:inherit;border:1px solid transparent;border-rad
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
 <body>
+<section id="editor">
+  <form id="eform">
+    <h3>تعديل الشاهد</h3>
+    <div class="row">
+      <div><label for="e-f">المجلد الأساسي</label><select id="e-f"></select></div>
+      <div><label for="e-s">المجلد الفرعي</label><select id="e-s"></select></div>
+    </div>
+    <label for="e-prog">اسم البرنامج</label><input type="text" id="e-prog" required>
+    <label for="e-ach">ماذا حقق البرنامج؟</label><textarea id="e-ach"></textarea>
+    <div class="row">
+      <div><label for="e-cnt">عدد المستفيدات</label><input type="number" id="e-cnt" min="0"></div>
+      <div><label for="e-tgt">الفئة المستهدفة</label>
+        <select id="e-tgt"><option>الطالبات</option><option>المعلمات</option><option>الأمهات والمجتمع</option><option>جميع منسوبات المدرسة</option></select></div>
+    </div>
+    <div class="row">
+      <div><label for="e-bef">قبل البرنامج</label><input type="text" id="e-bef"></div>
+      <div><label for="e-aft">بعد البرنامج</label><input type="text" id="e-aft"></div>
+    </div>
+    <label for="e-who">المنفِّذة</label><input type="text" id="e-who">
+    <label for="e-dt">التاريخ</label><input type="text" id="e-dt" placeholder="من ١/٣/١٤٤٨هـ إلى ٥/٣/١٤٤٨هـ">
+    <div class="btns"><button type="submit" id="e-save">حفظ التعديل</button><button type="button" id="e-cancel">إلغاء</button></div>
+  </form>
+</section>
+<section id="viewer">
+  <div class="box">
+    <div class="bar"><h4 id="vtitle"></h4><button type="button" id="vclose" aria-label="إغلاق">✕</button></div>
+    <iframe id="vframe" allow="autoplay; fullscreen" allowfullscreen title="الشاهد"></iframe>
+    <div class="dots" id="vfiles"></div>
+  </div>
+</section>
 <section id="login">
   <form id="lform" autocomplete="on">
     <button type="button" id="lclose" aria-label="إغلاق">✕</button>
     <img src="logo.png" alt="شعار وزارة التعليم">
     <h1>شواهد منجزات المدرسة</h1>
-    <p>لوحة الفجوات ومعرض الشواهد خاصة، ادخلي برقم جوالك</p>
-    <label for="phone">رقم الجوال</label>
-    <input id="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="05xxxxxxxx" required>
+    <p>لوحة الفجوات ومعرض الشواهد خاصة، ادخلي بالرقم السري</p>
+    <label for="phone">الرقم السري</label>
+    <input id="phone" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" required>
     <button id="lbtn">دخول</button>
     <div id="lerr"></div>
   </form>
@@ -336,7 +394,7 @@ const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 const supa = async (q, opt = {}) => { const { data } = await sb.auth.getSession();
   return fetch(`${SUPA_URL}/rest/v1/evidence${q}`, {...opt,
     headers: {apikey: SUPA_KEY, Authorization: 'Bearer ' + (data.session ? data.session.access_token : SUPA_KEY), 'Content-Type': 'application/json', ...(opt.headers || {})}}); };
-// login is by phone only, like the teacher record: the account password is derived from the number
+// login is by a secret code (2026-10-31, was the phone): its own Supabase account, the password is derived from the code
 const LATIN = s => s.replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x660).replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x6F0).trim();
 const DIGITS = p => LATIN(p).replace(/\D/g, '');
 const fromRow = r => ({id: r.id, f: (FOLDERS.find(f => f.name === r.folder) || {}).id, s: r.sub, prog: r.program, ach: r.achieved,
@@ -383,7 +441,11 @@ function renderSubs(){
   $('progList').innerHTML = (sub ? sub.p : f.subs.flatMap(s => s.p)).map(p => `<option value="${esc(p)}">`).join('');
 }
 
-function cardHTML(it){
+// a video the browser could not read a frame from (iPhone .mov) is stored as Drive's own thumbnail, marked with #v
+const driveId = u => (String(u).match(/\/d\/([\w-]+)/) || [])[1];
+const isVid = t => !!t && t.endsWith('#v');
+const driveThumb = u => `https://drive.google.com/thumbnail?id=${driveId(u)}&sz=w640#v`;
+function cardHTML(it, tools){
   const f = fById(it.f) || {name:''};
   const k = [];
   if (it.cnt) k.push(`${AR(it.cnt)} مستفيدة — ${esc(it.tgt)}`);
@@ -391,10 +453,12 @@ function cardHTML(it){
   return `<article class="ecard">
     <div class="top"><div class="crumb">${f.name}${it.s?' › '+esc(it.s):''}${it.demo?'<span class="demo">مثال</span>':''}</div>
       <h4>${esc(it.prog) || 'اسم البرنامج'}</h4></div>
-    <div class="ph">${it.imgs && it.imgs[0] ? `<img src="${it.imgs[0]}" alt="">` : 'صورة الشاهد'}</div>
+    <div class="ph${it.links && it.links[0] ? ' open' : ''}${isVid(it.imgs && it.imgs[0]) ? ' vid' : ''}" data-id="${esc(it.id || '')}">${it.imgs && it.imgs[0] ? `<img src="${esc(it.imgs[0])}" alt="" loading="lazy" onerror="this.remove()">` : 'صورة الشاهد'}</div>
+    ${isVid(it.imgs && it.imgs[0]) && it.links ? `<div class="dots" data-id="${esc(it.id || '')}">${it.links.map((_, j) => `<i class="${j?'':'on'}" data-k="${j}"></i>`).join('')}</div>` : ''}
     <div class="body"><p class="ach">${esc(it.ach) || 'ماذا حقق البرنامج…'}</p>
       ${k.length?`<div class="kpis">${k.map(x=>`<span class="kpi">${x}</span>`).join('')}</div>`:''}</div>
-    <div class="foot"><span>${esc(it.who)}</span>${it.links && it.links[0] ? `<a href="${esc(it.links[0])}" target="_blank" rel="noopener" style="color:var(--teal)">الصورة الأصلية</a>` : ''}<span>${it.dt || ''}</span></div>
+    <div class="foot"><span>${esc(it.who)}</span>${it.links && it.links[0] ? `<a href="${esc(it.links[0])}" target="_blank" rel="noopener" style="color:var(--teal)">${isVid(it.imgs && it.imgs[0]) ? 'الفيديو الأصلي' : 'الصورة الأصلية'}</a>` : ''}<span>${it.dt || ''}</span></div>
+    ${tools && SUPA && it.id ? `<div class="acts" data-id="${esc(it.id)}"><button type="button" data-a="edit">✎ تعديل</button><button type="button" class="del" data-a="del">🗑 حذف</button></div>` : ''}
   </article>`;
 }
 function current(){
@@ -496,6 +560,8 @@ $('save').onclick = async () => {
         if (!r.ok) throw new Error(r.error);
       } else for (let k = 0; k < st.imgs.length; k++) r.links.push(await sendFile(st.imgs[k].file, `صورة ${AR(k + 1)} من ${AR(st.imgs.length)}`, it));
       for (let k = 0; k < st.vids.length; k++) r.links.push(await sendFile(st.vids[k].file, `فيديو ${AR(k + 1)}`, it));
+      // video only: keep Drive's thumbnail (it can read .mov frames the browser cannot)
+      if (SUPA && !st.imgs.length && st.vids.length && r.links[0]) thumb = driveThumb(r.links[0]);
       if (SUPA) {
         // anyone may add; only the signed-in account may read rows back
         const res = await supa('', {method:'POST', headers:{Prefer: signedIn ? 'return=representation' : 'return=minimal'}, body: JSON.stringify({
@@ -544,9 +610,64 @@ function renderGal(){
   $('filters').innerHTML = [{id:'all', name:'الكل'}, ...FOLDERS].map(f =>
     `<button class="chip ${gf===f.id?'on':''}" data-g="${f.id}">${f.name}</button>`).join('');
   const list = items.filter(i => gf === 'all' || i.f === gf);
-  $('gal').innerHTML = list.length ? list.map(cardHTML).join('') : '<div class="empty">لا توجد شواهد في هذا المجلد بعد</div>';
+  $('gal').innerHTML = list.length ? list.map(it => cardHTML(it, true)).join('') :'<div class="empty">لا توجد شواهد في هذا المجلد بعد</div>';
 }
 $('filters').onclick = e => { const b = e.target.closest('[data-g]'); if (b) { gf = b.dataset.g; renderGal(); } };
+
+// click a card picture: play its Drive files in the page, one button per file
+function viewFile(links, k){
+  $('vfiles').innerHTML = links.map((_, j) => `<i class="${j===k?'on':''}" data-k="${j}"></i>`).join('');
+  $('vframe').src = `https://drive.google.com/file/d/${driveId(links[k])}/preview`;
+}
+$('gal').onclick = e => {
+  const a = e.target.closest('.acts [data-a]');
+  if (a) { const it = items.find(i => String(i.id) === a.parentNode.dataset.id); if (it) (a.dataset.a === 'del' ? delItem : editItem)(it); return; }
+  const p = e.target.closest('.ph.open, .dots'); if (!p) return;
+  const it = items.find(i => String(i.id) === p.dataset.id); if (!it) return;
+  const d = e.target.closest('.dots [data-k]');
+  $('vtitle').textContent = it.prog || '';
+  $('vfiles').onclick = ev => { const b = ev.target.closest('[data-k]'); if (b) viewFile(it.links, +b.dataset.k); };
+  viewFile(it.links, d ? +d.dataset.k : 0); $('viewer').classList.add('on');
+};
+// delete removes the row only; the photos and videos stay in her Drive
+async function delItem(it){
+  if (!confirm(`حذف شاهد «${it.prog || ''}»؟\nالصور والفيديو تبقى محفوظة في Drive.`)) return;
+  const res = await supa(`?id=eq.${it.id}`, {method:'DELETE'});
+  if (!res.ok) { alert('ما تم الحذف، حاولي مرة ثانية.\n' + await res.text()); return; }
+  items = items.filter(i => i !== it); renderGaps(); renderGal();
+}
+let editing = null;
+const eSubs = (fid, sel) => { const f = fById(fid) || {subs:[]}, names = f.subs.map(s => s.n);
+  if (sel && !names.includes(sel)) names.push(sel);
+  $('e-s').innerHTML = names.map(n => `<option ${n===sel?'selected':''}>${esc(n)}</option>`).join(''); };
+$('e-f').innerHTML = FOLDERS.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+$('e-f').onchange = () => eSubs($('e-f').value);
+function editItem(it){
+  editing = it;
+  $('e-f').value = it.f || FOLDERS[0].id; eSubs($('e-f').value, it.s);
+  $('e-prog').value = it.prog || ''; $('e-ach').value = it.ach || ''; $('e-cnt').value = it.cnt ?? '';
+  $('e-tgt').value = it.tgt || 'الطالبات'; $('e-bef').value = it.bef || ''; $('e-aft').value = it.aft || '';
+  $('e-who').value = it.who || ''; $('e-dt').value = it.dt || '';
+  $('editor').classList.add('on');
+}
+$('e-cancel').onclick = () => $('editor').classList.remove('on');
+$('eform').onsubmit = async e => {
+  e.preventDefault();
+  const cnt = DIGITS($('e-cnt').value);
+  $('e-save').disabled = true;
+  const res = await supa(`?id=eq.${editing.id}`, {method:'PATCH', headers:{Prefer:'return=representation'}, body: JSON.stringify({
+    folder: fById($('e-f').value).name, sub: $('e-s').value, program: $('e-prog').value.trim(), achieved: $('e-ach').value.trim(),
+    beneficiaries: cnt ? +cnt : null, target: $('e-tgt').value, before_value: $('e-bef').value.trim(), after_value: $('e-aft').value.trim(),
+    executor: $('e-who').value.trim(), hijri_date: $('e-dt').value.trim()})});
+  $('e-save').disabled = false;
+  if (!res.ok) { alert('ما تم الحفظ، حاولي مرة ثانية.\n' + await res.text()); return; }
+  const row = (await res.json())[0];
+  if (row) items[items.indexOf(editing)] = fromRow(row);
+  $('editor').classList.remove('on'); renderGaps(); renderGal();
+};
+const closeViewer = () => { $('viewer').classList.remove('on'); $('vframe').src = 'about:blank'; };
+$('vclose').onclick = closeViewer;
+$('viewer').onclick = e => { if (e.target.id === 'viewer') closeViewer(); };
 
 // «إضافة شاهد» is open to everyone; «لوحة الفجوات» and «معرض الشواهد» ask for the phone first (her choice 2026-10-30)
 let signedIn = false, wanted = null;
@@ -566,9 +687,9 @@ $('lform').onsubmit = async e => {
   e.preventDefault();
   $('lbtn').disabled = true; $('lerr').textContent = '';
   const d = DIGITS($('phone').value);
-  const { error } = await sb.auth.signInWithPassword({ email: d + '@teacher-file.app', password: d + '-tf1448' });
+  const { error } = await sb.auth.signInWithPassword({ email: 'evidence@rashidiya.app', password: d + '-ev1448' });
   $('lbtn').disabled = false;
-  if (error) { $('lerr').textContent = 'رقم الجوال غير مسجّل'; return; }
+  if (error) { $('lerr').textContent = 'الرقم السري غير صحيح'; return; }
   document.body.classList.remove('asklogin'); show(true);
   if (wanted) openTab(wanted);
 };
